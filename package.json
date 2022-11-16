@@ -1,0 +1,14 @@
+{
+  "dependencies": {
+    "eris": "^0.17.1"
+  },
+  "name": "GlobalBot",
+  "version": "1.0.0",
+  "description": "GlobalBot",
+  "main": "index.js",
+  "scripts": {
+    "run": "npm i && node ."
+  },
+  "author": "Aleod#4478",
+  "license": "ISC"
+}
