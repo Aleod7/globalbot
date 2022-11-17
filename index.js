@@ -1,26 +1,64 @@
 const { CommandClient } = require('eris')
 
-// Stupid ass bot creation
 async function init(token) {
-    const commands = new CommandClient(`Bot ${token}`, { intents: ['guilds'], maxShards: 'auto',restMode: true })
-    // Register the stupid ass command
-    commands.on('ready', async () => {
-        await commands.bulkEditCommands([{
-            name: 'ping',
-            description: 'Commande de ping',
-            type: 1,
-        }])
-    })
-    // Stupid ass interaction creation event
-    commands.on('interactionCreate', async (interaction) => {
-        if (interaction?.data?.name === 'ping') {
-            console.log(`${interaction.data.name} has been created`)
-            await interaction.createMessage({
-                content: 'Pong!'
-            })
-        }
-    })
-    commands.connect();
+  console.log(`[GAUCHOBOT] Bot en fonctionnement`)
+  const commands = new CommandClient(`Bot ${token}`, { intents: ['guilds'], maxShards: 'auto', restMode: true })
+  commands.on('ready', async () => {
+    await commands.bulkEditCommands([{
+      name: 'ping',
+      description: 'Commande ping',
+      type: 1,
+    }], [{
+      name: 'help',
+      description: 'Commande help',
+      type: 1,
+    }])
+  })
+  commands.on('interactionCreate', async (interaction) => {
+    //commande Ping
+    if (interaction?.data?.name === 'ping') {
+      console.log(`${interaction.data.name} utilisé`)
+      await interaction.createMessage({
+        embeds: [{
+          title: "🏓 Pong !",
+          description: "Commande **/ping** utilisé",
+          color: 0x008000,
+          fields: [
+            {
+              name: "Latence.",
+              value: `\`${Date.now() - interaction.createdAt}\` ms`,
+              inline: true
+            }
+          ],
+          footer: {
+            text: "GauchoBot"
+          }
+        }]
+      })
+    }
+    //commande Ping
+    if (interaction?.data?.name === 'help') {
+      console.log(`${interaction.data.name} utilisé`)
+      await interaction.createMessage({
+        embeds: [{
+          title: "🏓 Pong !",
+          description: "Commande **/ping** utilisé",
+          color: 0x008000,
+          fields: [
+            {
+              name: "Latence.",
+              value: `\`${Date.now() - interaction.createdAt}\` ms`,
+              inline: true
+            }
+          ],
+          footer: {
+            text: "GauchoBot"
+          }
+        }]
+      })
+    }
+  })
+  commands.connect();
 }
 
 const tokenFromStupidCommand = process.argv[2]
