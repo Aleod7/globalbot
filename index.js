@@ -4,8 +4,17 @@ const rest = new REST({ version: '10' }).setToken(process.argv[2]);
 async function init(token) {
   client.on('ready', () => {
     console.log(`Connecté sur discord sous pseudo: ${client.user.tag}!`)
-    client.user.setPresence({ activities: [{ name: 'vers la Gauche', type: ActivityType.Watching }], status: 'idle' });
-  });
+    let i = 0
+    setInterval(() => {
+      if (i === 0) {
+        client.user.setPresence({ activities: [{ name: 'vers la Gauche', type: ActivityType.Watching }], status: 'idle' });
+        i = 1
+      } else {
+        client.user.setPresence({ activities: [{ name: 'rien avec moi même', type: ActivityType.Playing }], status: 'idle' });
+        i = 0
+      }
+    }, 5000);
+    });
 
   //si un message contient bonjour, dire bonjour
   client.on('messageCreate', (message) => {
