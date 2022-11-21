@@ -15,23 +15,21 @@ async function init(token) {
     }
   });
 
-  client.on('messageCreate', (message) => {
+  client.on('messageCreate', async (message) => {
     const droiteagauche = message.content.toLowerCase()
     const verify = droiteagauche.includes("droite")
     if (verify) {
+      message.delete()
       message.channel.createWebhook({
         name: message.member.displayName,
         avatar: message.author.avatarURL(),
       }).then(wb => {
-        console.log(wb);
         const webhook = new WebhookClient({ id: wb.id, token: wb.token });
-        webhook.send(message.content.replace(/droite/g, "gauche"))
+        webhook.send(message.content.toLowerCase().replace(/droite/g, "gauche"))
         webhook.delete()
           .catch(console.error);
       })
         .catch(console.error);
-
-      message.delete()
     }
   });
 
