@@ -1,0 +1,17 @@
+{
+  "dependencies": {
+    "@discordjs/rest": "^1.3.0",
+    "commands": "^0.0.7",
+    "discord-api-types": "^0.37.18",
+    "discord.js": "^14.6.0"
+  },
+  "name": "GlobalBot",
+  "version": "1.0.0",
+  "description": "GlobalBot",
+  "main": "index.js",
+  "scripts": {
+    "run": "npm i && node ."
+  },
+  "author": "Aleod#4478",
+  "license": "ISC"
+}
