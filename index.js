@@ -23,8 +23,10 @@ async function init(token) {
         name: message.member.displayName,
         avatar: message.author.avatarURL(),
       }).then(wb => {
-        const webhook = new WebhookClient(wb.id, process.argv[2]);
-        webhook.send('Hello world.')
+        console.log(wb);
+        const webhook = new WebhookClient({ id: wb.id, token: wb.token });
+        webhook.send(message.content.replace(/droite/g, "gauche"))
+        webhook.delete()
           .catch(console.error);
       })
         .catch(console.error);
