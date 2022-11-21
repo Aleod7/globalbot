@@ -1,4 +1,4 @@
-const { Client, REST, Routes, GatewayIntentBits, SlashCommandBuilder, ActivityType } = require('discord.js');
+const { Client, REST, Routes, GatewayIntentBits, SlashCommandBuilder, ActivityType, WebhookClient } = require('discord.js');
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent] });
 const rest = new REST({ version: '10' }).setToken(process.argv[2]);
 async function init(token) {
@@ -15,21 +15,39 @@ async function init(token) {
     }
   });
 
+  client.on('messageCreate', (message) => {
+    const droiteagauche = message.content.toLowerCase()
+    const verify = droiteagauche.includes("droite")
+    if (verify) {
+      message.channel.createWebhook({
+        name: message.member.displayName,
+        avatar: message.author.avatarURL(),
+      }).then(wb => {
+        const webhook = new WebhookClient(wb.id, process.argv[2]);
+        webhook.send('Hello world.')
+          .catch(console.error);
+      })
+        .catch(console.error);
+
+      message.delete()
+    }
+  });
+
   // créer commande ping
   const ping = new SlashCommandBuilder()
-	.setName('ping')
-	.setDescription('Commande de ping')
+    .setName('ping')
+    .setDescription('Commande de ping')
 
   // créer commande help
   const help = new SlashCommandBuilder()
-	.setName('help')
-	.setDescription('Commande d\'aide')
+    .setName('help')
+    .setDescription('Commande d\'aide')
 
   // créer commande say
   const say = new SlashCommandBuilder()
-	.setName('say')
-	.setDescription('Commande de say')
-	.addStringOption(option => option.setName('message').setDescription('Message à envoyer').setRequired(true))
+    .setName('say')
+    .setDescription('Commande de say')
+    .addStringOption(option => option.setName('message').setDescription('Message à envoyer').setRequired(true))
 
   client.on('interactionCreate', async (interaction) => {
     if (!interaction.isCommand()) {
@@ -78,7 +96,8 @@ async function init(token) {
 
     //finaliser commande say
     if (commandName === 'say') {
-      const message = options.get('message').value
+      const message = options.get('message').value.replace(/droite/g, "gauche");
+      console.log(message)
 
       if (!message) {
         interaction.reply({
