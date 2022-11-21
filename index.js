@@ -1,65 +1,115 @@
-const { CommandClient } = require('eris')
-
+const { Client, REST, Routes, GatewayIntentBits, SlashCommandBuilder, ActivityType } = require('discord.js');
+const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent] });
+const rest = new REST({ version: '10' }).setToken(process.argv[2]);
 async function init(token) {
-  console.log(`[GAUCHOBOT] Bot en fonctionnement`)
-  const commands = new CommandClient(`Bot ${token}`, { intents: ['guilds'], maxShards: 'auto', restMode: true })
-  commands.on('ready', async () => {
-    await commands.bulkEditCommands([{
-      name: 'ping',
-      description: 'Commande ping',
-      type: 1,
-    }], [{
-      name: 'help',
-      description: 'Commande help',
-      type: 1,
-    }])
-  })
-  commands.on('interactionCreate', async (interaction) => {
-    //commande Ping
-    if (interaction?.data?.name === 'ping') {
-      console.log(`${interaction.data.name} utilisé`)
-      await interaction.createMessage({
+  client.on('ready', () => {
+    console.log(`Connecté sur discord sous pseudo: ${client.user.tag}!`)
+    client.user.setPresence({ activities: [{ name: 'vers la Gauche', type: ActivityType.Watching }], status: 'idle' });
+  });
+
+  //si un message contient bonjour, dire bonjour
+  client.on('messageCreate', (message) => {
+    const mctl = message.content.toLowerCase()
+    if (mctl === "bonjour" || mctl === "salut" || mctl === "hey") {
+      message.react("👋")
+    }
+  });
+
+  // créer commande ping
+  const ping = new SlashCommandBuilder()
+	.setName('ping')
+	.setDescription('Commande de ping')
+
+  // créer commande help
+  const help = new SlashCommandBuilder()
+	.setName('help')
+	.setDescription('Commande d\'aide')
+
+  // créer commande say
+  const say = new SlashCommandBuilder()
+	.setName('say')
+	.setDescription('Commande de say')
+	.addStringOption(option => option.setName('message').setDescription('Message à envoyer').setRequired(true))
+
+  client.on('interactionCreate', async (interaction) => {
+    if (!interaction.isCommand()) {
+      return
+    }
+
+    const { commandName, options } = interaction
+
+    // finaliser commande ping
+    if (commandName === 'ping') {
+      interaction.reply({
         embeds: [{
-          title: "🏓 Pong !",
-          description: "Commande **/ping** utilisé",
-          color: 0x008000,
-          fields: [
-            {
-              name: "Latence.",
-              value: `\`${Date.now() - interaction.createdAt}\` ms`,
-              inline: true
-            }
-          ],
-          footer: {
-            text: "GauchoBot"
-          }
-        }]
+          title: '🏓 Pong!',
+          description: `${interaction.member.user} a utilisé•e **/ping**.`,
+          color: 0x00ff00,
+          fields: [{
+            name: 'Latence',
+            value: `\`${Date.now() - interaction.createdTimestamp}\`ms`,
+            inline: true,
+          }, {
+            name: 'Latence API',
+            value: `\`${Math.round(client.ws.ping)}\`ms`,
+            inline: true,
+          }]
+        }],
+        //ephemeral: true,
       })
     }
-    //commande Ping
-    if (interaction?.data?.name === 'help') {
-      console.log(`${interaction.data.name} utilisé`)
-      await interaction.createMessage({
+
+    //finaliser commande help
+    if (commandName === 'help') {
+      interaction.reply({
         embeds: [{
-          title: "🏓 Pong !",
-          description: "Commande **/ping** utilisé",
-          color: 0x008000,
-          fields: [
-            {
-              name: "Latence.",
-              value: `\`${Date.now() - interaction.createdAt}\` ms`,
-              inline: true
-            }
-          ],
-          footer: {
-            text: "GauchoBot"
-          }
-        }]
+          title: '📖 Liste des commandes',
+          description: 'Voici la liste des commandes disponibles:',
+          color: 0x00ff00,
+          fields: commands?.map(command => ({
+            name: `**${command.name}**`,
+            value: `\`${command.description}\``,
+            inline: true,
+          })),
+        }],
+        //ephemeral: true,
       })
     }
+
+    //finaliser commande say
+    if (commandName === 'say') {
+      const message = options.get('message').value
+
+      if (!message) {
+        interaction.reply({
+          embeds: [{
+            title: '🚫 Erreur',
+            description: 'Vous devez entrer un message.',
+            color: 0xff0000,
+          }],
+          ephemeral: true,
+        })
+      } else {
+        interaction.reply({
+          content: message,
+          //ephemeral: true,
+        })
+      }
+    }
+
   })
-  commands.connect();
+
+  const commands = [ping.toJSON(), help.toJSON(), say.toJSON()]
+  try {
+    console.log(`[${new Date().toLocaleString()}] Chargement des commandes...`)
+    await rest.put(Routes.applicationCommands("1041946620004139058"), {
+      body: commands,
+    });
+    console.log(`[${new Date().toLocaleString()}] Commandes chargées avec succès.`)
+    client.login(token);
+  } catch (err) {
+    console.log(err);
+  }
 }
 
-const tokenFromStupidCommand = process.argv[2]
-init(tokenFromStupidCommand);
+init(process.argv[2]);
